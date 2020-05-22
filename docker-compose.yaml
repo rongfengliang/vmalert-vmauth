@@ -38,10 +38,10 @@ services:
     - 8880:8880
     command: 
     - -rule=/etc/victoriametrics/alert.rules
-    - -datasource.url=http://vmselect:8481/select/1/prometheus
-    # - -datasource.url=http://vmauth:8427
-    # - -datasource.basicAuth.password=dalong
-    # - -datasource.basicAuth.username=dalong-select-account-1
+    # - -datasource.url=http://vmselect:8481/select/1/prometheus
+    - -datasource.url=http://vmauth:8427
+    - -datasource.basicAuth.password=dalong
+    - -datasource.basicAuth.username=dalong-select-account-1
     - -notifier.url=http://alertmanager:9093
   vmauth:
     image: victoriametrics/vmauth
