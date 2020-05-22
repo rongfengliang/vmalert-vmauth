@@ -49,6 +49,7 @@ services:
     - "./config.yaml:/etc/victoriametrics/config.yaml"
     command:
       - '-auth.config=/etc/victoriametrics/config.yaml'
+      - '-http.disableResponseCompression'
     ports:
       - 8427:8427
   vminsert:
