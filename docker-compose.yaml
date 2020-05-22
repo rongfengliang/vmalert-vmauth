@@ -1,0 +1,69 @@
+version:  "3"
+services: 
+  vmstorage:
+    image: victoriametrics/vmstorage
+    ports:
+      - 8482:8482
+      - 8400:8482
+      - 8401:8482
+    volumes:
+      - ./strgdata:/storage
+    command:
+      - '--storageDataPath=/storage'
+  vmagent:
+    image: victoriametrics/vmagent
+    volumes: 
+    - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+    - 8429:8429
+    command:  
+    - -promscrape.config=/etc/prometheus/prometheus.yml 
+    - -remoteWrite.basicAuth.username=dalong-insert-account-1
+    - -remoteWrite.basicAuth.password=dalong
+    - -remoteWrite.url=http://vmauth:8427
+  alertmanager:
+    image: prom/alertmanager:latest
+    volumes: 
+    - "./alertmanager.yaml:/etc/alertmanager.yaml"
+    command: 
+    - --config.file=/etc/alertmanager.yaml
+    - --storage.path=/tmp/alertmanager1
+    ports:
+    - 9093:9093
+  vmalert:
+    image: victoriametrics/vmalert
+    volumes: 
+    - "./alert.rules:/etc/victoriametrics/alert.rules"
+    ports:
+    - 8880:8880
+    command: 
+    - -rule=/etc/victoriametrics/alert.rules
+    - -datasource.url=http://vmselect:8481/select/1/prometheus
+    # - -datasource.url=http://vmauth:8427
+    # - -datasource.basicAuth.password=dalong
+    # - -datasource.basicAuth.username=dalong-select-account-1
+    - -notifier.url=http://alertmanager:9093
+  vmauth:
+    image: victoriametrics/vmauth
+    volumes: 
+    - "./config.yaml:/etc/victoriametrics/config.yaml"
+    command:
+      - '-auth.config=/etc/victoriametrics/config.yaml'
+    ports:
+      - 8427:8427
+  vminsert:
+    image: victoriametrics/vminsert
+    command:
+      - '--storageNode=vmstorage:8400'
+    ports:
+      - 8480:8480
+  vmselect:
+    image: victoriametrics/vmselect
+    command:
+      - '--storageNode=vmstorage:8401'
+    ports:
+      - 8481:8481
+  grafana:
+    image: grafana/grafana
+    ports:
+      - 3000:3000
